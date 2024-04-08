@@ -1,6 +1,9 @@
-package src.main.test.java;
+package org.clientserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,13 +11,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
-import scr.main.java.Server;
-
-import static org.junit.Assert.assertEquals;
-
 public class ServerTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
     private Server server;
 
     @Before
@@ -22,7 +23,7 @@ public class ServerTest {
         // Start the server before each test
         server = new Server();
         new Thread(() -> {
-            server.main(new String[]{});
+            Server.main(new String[]{});
         }).start();
     }
 
@@ -34,11 +35,10 @@ public class ServerTest {
 
     @Test
     public void testServerEcho() {
-        final String serverAddress = "127.0.0.1"; // Change this to your server's IP address
         final int serverPort = 12345; // Change this to your server's port
 
         try {
-            Socket socket = new Socket(serverAddress, serverPort);
+            Socket socket = new Socket(InetAddress.getLocalHost(), serverPort);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -52,9 +52,9 @@ public class ServerTest {
             socket.close();
 
             // Verify that the server echoed back the message
-            assertEquals("Server received: Hello, Server!", response);
+            Assert.assertEquals("Server received: Hello, Server!", response);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Unable to connect to server", e);
         }
     }
 }
